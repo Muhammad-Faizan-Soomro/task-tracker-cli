@@ -87,14 +87,43 @@ const updateDesc = (id, desc) => {
           });
           fs.writeFileSync("./task.json", JSON.stringify(updatedTask), "utf-8");
         } else {
-          console.log(`You Currently Have No Tasks With The ID = ${id}.`);
+          console.log(`You Currently Have No Task With The ID = ${id}.`);
         }
       } else {
-        console.log(`You Currently Have No Tasks With The ID = ${id}.`);
+        console.log(`You Currently Have No Task With The ID = ${id}.`);
       }
     } else {
       // if file doesn't exist: return a nice message.
-      console.log(`You Currently Have No Tasks With The ID = ${id}.`);
+      console.log(`You Currently Have No Task With The ID = ${id}.`);
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+const deleteTask = (id) => {
+  try {
+    // checking the file if it exists.
+    if (fs.existsSync("./task.json")) {
+      // if file exist: Read its content.
+      const tasks = JSON.parse(fs.readFileSync("./task.json", "utf-8"));
+      // checking if file is empty or not.
+      if (tasks) {
+        // checking if the provided id is valid or not.
+        if (tasks.some((task) => task.id == id)) {
+          const updatedTask = tasks.filter((task) => {
+            return task.id != id;
+          });
+          fs.writeFileSync("./task.json", JSON.stringify(updatedTask), "utf-8");
+        } else {
+          console.log(`You Currently Have No Task With The ID = ${id}.`);
+        }
+      } else {
+        console.log(`You Currently Have No Task With The ID = ${id}.`);
+      }
+    } else {
+      // if file doesn't exist: return a nice message.
+      console.log(`You Currently Have No Task With The ID = ${id}.`);
     }
   } catch (error) {
     console.log(error.message);
@@ -121,5 +150,12 @@ switch (process.argv[2]) {
       console.log("USAGE: node task-cli.js update <id> <description>");
     } else {
       updateDesc(process.argv[3], process.argv[4]);
+    }
+    break;
+  case "delete":
+    if (!process.argv[3]) {
+      console.log("USAGE: node task-cli.js delete <id>");
+    } else {
+      deleteTask(process.argv[3]);
     }
 }
