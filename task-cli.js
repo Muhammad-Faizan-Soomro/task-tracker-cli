@@ -1,7 +1,6 @@
 import fs from "fs";
 
 const addTask = (description) => {
-  //creating the task
   let task = {
     id: 1,
     description: description,
@@ -10,197 +9,185 @@ const addTask = (description) => {
     updatedAt: new Date().toLocaleString(),
   };
 
-  // check file --> not-exist --> create --> make a list, add the object and write into file.
-  // check file --> exist --> read data --> make an object --> append to the list --> write back the list.
-
   try {
-    // checking the file if it exists.
-    if (fs.existsSync("./task.json")) {
-      // if file exist: Read its content.
-      let alreadyExistingData = JSON.parse(
-        fs.readFileSync("./task.json", "utf-8")
-      );
+    if (checkFile()) {
+      let tasks = readFile();
 
-      task.id = alreadyExistingData.length + 1;
+      task.id = tasks[tasks.length - 1].id + 1;
 
-      alreadyExistingData.push(task);
+      tasks.push(task);
 
-      fs.writeFileSync(
-        "./task.json",
-        JSON.stringify(alreadyExistingData),
-        "utf-8"
-      );
+      writeFile(tasks);
     } else {
-      // if file doesn't exist: Create the file and add the task as it will be the first task.
-      fs.writeFileSync("./task.json", JSON.stringify([task]), "utf-8");
+      writeFile([task]);
     }
-    console.log(`Task added successfully (ID:${task.id})`);
+    console.log(`Task added successfully ( ID:${task.id} )`);
   } catch (error) {
-    console.log(error.message);
+    console.log(`Error Adding Task: ${error.message}`);
   }
 };
 
 const listTask = () => {
-  // if file exist: return all task
-  // if file doesn't exist: return a message.
-
   try {
-    // checking the file if it exists.
-    if (fs.existsSync("./task.json")) {
-      // if file exist: Read its content.
-      const tasks = JSON.parse(fs.readFileSync("./task.json", "utf-8"));
-      // checking if file is empty or not.
+    if (checkFile()) {
+      const tasks = readFile();
       if (tasks) {
-        switch (process.argv[3]) {
-          case "done":
-            console.log(
-              tasks.filter((task) => {
-                return task.status == "done";
-              })
-            );
-            break;
+        if (!process.argv[3]) {
+          console.log(tasks);
+        } else {
+          switch (process.argv[3]) {
+            case "done":
+              list("done");
+              break;
 
-          case "todo":
-            console.log(
-              tasks.filter((task) => {
-                return task.status == "todo";
-              })
-            );
-            break;
+            case "todo":
+              list("todo");
+              break;
 
-          case "in-progress":
-            console.log(
-              tasks.filter((task) => {
-                return task.status == "in-progress";
-              })
-            );
-            break;
+            case "in-progress":
+              list("in-progress");
+              break;
 
-          default:
-            console.log(tasks);
+            default:
+              console.log(`There Exist No Input '${process.argv[3]}'`);
+          }
         }
       } else {
         console.log("You Currently Have No Tasks.");
       }
     } else {
-      // if file doesn't exist: return a nice message.
-      console.log("You Currently Have No Tasks.");
+      console.log("There Exist No JSON File.");
     }
   } catch (error) {
-    console.log(error.message);
+    console.log(`Error Listing Tasks: ${error.message}`);
   }
 };
 
 const updateDesc = (id, desc) => {
-  // check if task with the provided id exist or not. If it does, update it.
-
   try {
-    // checking the file if it exists.
-    if (fs.existsSync("./task.json")) {
-      // if file exist: Read its content.
-      const tasks = JSON.parse(fs.readFileSync("./task.json", "utf-8"));
-      // checking if file is empty or not.
+    if (checkFile()) {
+      const tasks = readFile();
       if (tasks) {
-        // checking if the provided id is valid or not.
         if (tasks.some((task) => task.id == id)) {
-          const updatedTask = tasks.map((task) => {
-            if (task.id == id) {
-              task.description = desc;
-              task.updatedAt = new Date().toLocaleString();
-            }
-            return task;
-          });
-          fs.writeFileSync("./task.json", JSON.stringify(updatedTask), "utf-8");
+          const updatedTask = updateTask(id, desc);
+          writeFile(updatedTask);
         } else {
-          console.log(`You Currently Have No Task With The ID = ${id}.`);
+          console.log(`There Exist No Task With ID = ${id}.`);
         }
       } else {
-        console.log(`You Currently Have No Task With The ID = ${id}.`);
+        console.log(`You Currently Have No Tasks.`);
       }
     } else {
-      // if file doesn't exist: return a nice message.
-      console.log(`You Currently Have No Task With The ID = ${id}.`);
+      console.log(`There Exist No JSON File.`);
     }
   } catch (error) {
-    console.log(error.message);
+    console.log(`Error Updating Description: ${error.message}`);
   }
 };
 
 const deleteTask = (id) => {
   try {
-    // checking the file if it exists.
-    if (fs.existsSync("./task.json")) {
-      // if file exist: Read its content.
-      const tasks = JSON.parse(fs.readFileSync("./task.json", "utf-8"));
-      // checking if file is empty or not.
+    if (checkFile()) {
+      const tasks = readFile();
       if (tasks) {
-        // checking if the provided id is valid or not.
         if (tasks.some((task) => task.id == id)) {
           const updatedTask = tasks.filter((task) => {
             return task.id != id;
           });
-          fs.writeFileSync("./task.json", JSON.stringify(updatedTask), "utf-8");
+          writeFile(updatedTask);
         } else {
-          console.log(`You Currently Have No Task With The ID = ${id}.`);
+          console.log(`There Exist No Task With ID = ${id}.`);
         }
       } else {
-        console.log(`You Currently Have No Task With The ID = ${id}.`);
+        console.log(`You Currently Have No Tasks.`);
       }
     } else {
-      // if file doesn't exist: return a nice message.
-      console.log(`You Currently Have No Task With The ID = ${id}.`);
+      console.log(`There Exist No JSON File.`);
     }
   } catch (error) {
-    console.log(error.message);
+    console.log(`Error Deleting Task: ${error.message}`);
   }
 };
 
 const updateStatus = (id) => {
   try {
-    // checking the file if it exists.
-    if (fs.existsSync("./task.json")) {
-      // if file exist: Read its content.
-      const tasks = JSON.parse(fs.readFileSync("./task.json", "utf-8"));
-      // checking if file is empty or not.
+    if (checkFile()) {
+      const tasks = readFile();
       if (tasks) {
-        // checking if the provided id is valid or not.
         if (tasks.some((task) => task.id == id)) {
-          const updatedTask = tasks.map((task) => {
-            if (task.id == id) {
-              if (process.argv[2] == "mark-in-progress") {
-                task.status = "in-progress";
-                task.updatedAt = new Date().toLocaleString();
-              } else {
-                task.status = "done";
-                task.updatedAt = new Date().toLocaleString();
-              }
-            }
-            return task;
-          });
-          fs.writeFileSync("./task.json", JSON.stringify(updatedTask), "utf-8");
+          const updatedTask = updateTask(id);
+          writeFile(updatedTask);
         } else {
-          console.log(`You Currently Have No Task With The ID = ${id}.`);
+          console.log(`There Exist No Task With ID = ${id}.`);
         }
       } else {
-        console.log(`You Currently Have No Task With The ID = ${id}.`);
+        console.log(`You Currently Have No Tasks.`);
       }
     } else {
-      // if file doesn't exist: return a nice message.
-      console.log(`You Currently Have No Task With The ID = ${id}.`);
+      console.log(`There Exist No JSON File.`);
     }
   } catch (error) {
-    console.log(error.message);
+    console.log(`Error Updating Status: ${error.message}`);
   }
 };
 
+// Some Utility Functions
+const writeFile = (data) => {
+  if (data) {
+    fs.writeFileSync("./task.json", JSON.stringify(data), "utf-8");
+  } else {
+    console.log("Please Provide Valid Data.");
+  }
+};
+
+const checkFile = () => {
+  return fs.existsSync("./task.json");
+};
+
+const readFile = () => {
+  return JSON.parse(fs.readFileSync("./task.json", "utf-8"));
+};
+
+const list = (status) => {
+  const tasks = readFile();
+  const retrievedTasks = tasks.filter((task) => {
+    return task.status == status;
+  });
+  retrievedTasks.length > 0
+    ? console.log(retrievedTasks)
+    : console.log(`Currently There Are No Task ${status}`);
+};
+
+const updateTask = (id, desc = "") => {
+  const tasks = readFile();
+  const updated = tasks.map((task) => {
+    if (task.id == id) {
+      if (process.argv[2] == "mark-in-progress") {
+        task.status = "in-progress";
+        task.updatedAt = new Date().toLocaleString();
+      } else if (process.argv[2] == "mark-done") {
+        task.status = "done";
+        task.updatedAt = new Date().toLocaleString();
+      } else if (desc != "") {
+        task.description = desc;
+        task.updatedAt = new Date().toLocaleString();
+      }
+    }
+    return task;
+  });
+  return updated;
+};
+
+// MAIN
 if (!process.argv[2]) {
-  console.log("USAGE: node task-cli.js <functionality> <options>");
+  console.log("USAGE: node task-cli <actions> <inputs>");
+  process.exit();
 }
 
 switch (process.argv[2]) {
   case "add":
-    if (!process.argv[3]) {
-      console.log("USAGE: node task-cli.js add <task>");
+    if (process.argv.length != 4) {
+      console.log("USAGE: node task-cli add <task>");
     } else {
       addTask(process.argv[3]);
     }
@@ -209,31 +196,33 @@ switch (process.argv[2]) {
     listTask();
     break;
   case "update":
-    if (!(process.argv[3] && process.argv[4])) {
-      console.log("USAGE: node task-cli.js update <id> <description>");
+    if (process.argv.length != 5) {
+      console.log("USAGE: node task-cli update <id> <description>");
     } else {
       updateDesc(process.argv[3], process.argv[4]);
     }
     break;
   case "delete":
-    if (!process.argv[3]) {
-      console.log("USAGE: node task-cli.js delete <id>");
+    if (process.argv.length != 4) {
+      console.log("USAGE: node task-cli delete <id>");
     } else {
       deleteTask(process.argv[3]);
     }
     break;
   case "mark-in-progress":
-    if (!process.argv[3]) {
-      console.log("USAGE: node task-cli.js mark-in-progress <id>");
+    if (process.argv.length != 4) {
+      console.log("USAGE: node task-cli mark-in-progress <id>");
     } else {
       updateStatus(process.argv[3]);
     }
     break;
   case "mark-done":
-    if (!process.argv[3]) {
-      console.log("USAGE: node task-cli.js mark-done <id>");
+    if (process.argv.length != 4) {
+      console.log("USAGE: node task-cli mark-done <id>");
     } else {
       updateStatus(process.argv[3]);
     }
     break;
+  default:
+    console.log(`There Exist No Such Action '${process.argv[2]}'`);
 }
