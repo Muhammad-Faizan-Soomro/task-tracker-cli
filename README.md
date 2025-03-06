@@ -96,15 +96,10 @@ node task-cli list
 ```
 📌 **Output (Example):**  
 ```
-[
-  {
-    "id": 1,
-    "description": "Buy groceries and cook dinner",
-    "status": "done",
-    "createdAt": "3/6/2025, 10:00 AM",
-    "updatedAt": "3/6/2025, 10:15 AM"
-  }
-]
+ID: [1] | Buy groceries and cook dinner | Status: done
+Created: 3/7/2025, 10:00:00 AM
+Updated: 3/7/2025, 11:30:25 AM
+──────────────────────────────────────────────────
 ```
 
 ### 🎯 List Tasks by Status  
